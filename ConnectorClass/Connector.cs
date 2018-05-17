@@ -41,9 +41,21 @@ namespace YouTrackHubExchanger.ConnectorClass
         public void MarkdownDeserializer()
         {
             string widgetMessage = YouTrackConnect();
-            Regex regex = new Regex(@"### (\w+)\n\n((?:^\+.*$\n?)+)", RegexOptions.Multiline);
+            Regex regex = new Regex(@"### (?<vendor>\w+)\n\n(?<models>(?:^\+.*$\n?)+)", RegexOptions.Multiline);
             MatchCollection matches = regex.Matches(widgetMessage);
-            Console.WriteLine(matches[0].Value);
+            Regex regex2 = new Regex(@"^\+ \[(?<model>\S+)\]\((?<url>\S+)\)(?: - (?<fw>.+))?$", RegexOptions.Multiline);
+            
+            foreach (Match m in matches)
+            {
+                Console.WriteLine(m.Groups["vendor"] + ":\n");
+                MatchCollection matches2 = regex2.Matches(m.Groups["models"].Value);
+                foreach (Match m2 in matches2)
+                {
+                    Console.WriteLine(m2.Groups["model"]);
+                }
+                
+            }
+            
         }
     }
 }
