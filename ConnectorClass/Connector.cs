@@ -2,48 +2,48 @@
 using System.IO;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.RegularExpressions;
 using RestSharp;
 using RestSharp.Authenticators;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace YouTrackHubExchanger.ConnectorClass
 {
     class Connector
     {
-        public StreamReader YouTrackRestParams()
+        public string YouTrackRestParams()
         {
-            StreamReader youtrackParams = new StreamReader(@"..\..\..\inputdata\YouTrackInput.json");
-            
-            return youtrackParams;
+            string jsonInput = File.ReadAllText(@"..\..\..\inputdata\YouTrackInput.json");            
+            return jsonInput;
         }
 
-        public void YouTrackConnect()
+        public string YouTrackConnect()
         {
             
-            var YTparams = YouTrackRestParams();
+            JObject jInput = JObject.Parse(YouTrackRestParams());
+
+            var client = new RestClient((string) jInput["YTurl"] + "/" + (string) jInput["YTdashboard"]);
+            client.Authenticator = new JwtAuthenticator((string) jInput["YTtoken"]);
+            var request = new RestRequest(Method.GET);      
+            request.AddHeader("Accept", "application/json");
             
-
-            //while ((line = YTparams.ReadLine()) != null)
-            //{
-                
-            //}
-
-            var client = new RestClient();
-            // client.Authenticator = new HttpBasicAuthenticator(username, password);
-
-            var request = new RestRequest("resource/{id}", Method.POST);
-            request.AddParameter("name", "value"); // adds to POST or URL querystring based on Method
-            request.AddUrlSegment("id", "123"); // replaces matching token in request.Resource
-
-            // easily add HTTP Headers
-            request.AddHeader("header", "value");
-
-            // add files to upload (works with compatible verbs)
-            //request.AddFile(path);
-
-            // execute the request
             IRestResponse response = client.Execute(request);
             var content = response.Content;
+
+            JObject contentGET = JObject.Parse(content);
+            JToken widgetID = contentGET.SelectToken(string.Format(@"$.data.widgets[?(@.config.id=='{0}')].config.message", (string)jInput["YTwidget"]));
+
+            return widgetID.ToString();
+
+        }
+
+        public void MarkdownDeserializer()
+        {
+            string widgetMessage = YouTrackConnect();
+            Regex regex = new Regex(@"### (\w+)\n\n((?:^\+.*$\n?)+)", RegexOptions.Multiline);
+            MatchCollection matches = regex.Matches(widgetMessage);
+            Console.WriteLine(matches[0].Value);
         }
     }
 }
