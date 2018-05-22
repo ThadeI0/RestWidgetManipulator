@@ -9,7 +9,8 @@ namespace YouTrackHubExchanger
         {
             Connector connector = new Connector();
             connector.MarkdownDeserializer();
-            Console.WriteLine("Hello World!");
+            //Console.WriteLine("Hello World!");
+            Console.ReadKey();
         }
     }
 }
