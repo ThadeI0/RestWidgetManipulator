@@ -8,8 +8,11 @@ namespace YouTrackHubExchanger
         static void Main(string[] args)
         {
             Connector connector = new Connector();
+            connector.YouTrackRestParams();
+            connector.YouTrackConnect();
             connector.MarkdownDeserializer();
-            //Console.WriteLine("Hello World!");
+            connector.MarkdownSerializer();
+            Console.WriteLine("All operations done");
             Console.ReadKey();
         }
     }

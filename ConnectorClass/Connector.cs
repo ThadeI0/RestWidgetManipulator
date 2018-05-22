@@ -12,17 +12,21 @@ namespace YouTrackHubExchanger.ConnectorClass
 {
     class Connector
     {
-        public string YouTrackRestParams()
+        private JObject bufferBody = new JObject();
+        private JToken widgetID;
+        private dynamic exchangeList = new JArray();
+        private string jsonInput;
+
+        public void YouTrackRestParams()
         {
-            string jsonInput = File.ReadAllText(@"..\..\..\inputdata\YouTrackInput.json");
-            return jsonInput;
+            jsonInput = File.ReadAllText(@"..\..\..\inputdata\YouTrackInput.json");
+            Console.WriteLine("Params read: done");           
         }
 
-        public string YouTrackConnect()
+        public void YouTrackConnect()
         {
-
-            JObject jInput = JObject.Parse(YouTrackRestParams());
-
+            JObject jInput = JObject.Parse(jsonInput);
+            
             var client = new RestClient((string)jInput["YTurl"] + "/" + (string)jInput["YTdashboard"]);
             client.Authenticator = new JwtAuthenticator((string)jInput["YTtoken"]);
             var request = new RestRequest(Method.GET);
@@ -31,18 +35,16 @@ namespace YouTrackHubExchanger.ConnectorClass
             IRestResponse response = client.Execute(request);
             var content = response.Content;
 
-            JObject contentGET = JObject.Parse(content);
-            JToken widgetID = contentGET.SelectToken(string.Format(@"$.data.widgets[?(@.config.id=='{0}')].config.message", (string)jInput["YTwidget"]));
-
-            return widgetID.ToString();
-
+            bufferBody = JObject.Parse(content);
+            widgetID = bufferBody.SelectToken(string.Format(@"$.data.widgets[?(@.config.id=='{0}')].config.message", (string)jInput["YTwidget"]));
+            Console.WriteLine("YOUTRACK GET: done");
         }
 
         public void MarkdownDeserializer()
         {
-            dynamic exchangeList = new JArray();
-            dynamic tempProduct = null;
-            string widgetMessage = YouTrackConnect();
+            
+            dynamic tempProduct = null; 
+            string widgetMessage = widgetID.ToString(); //
             Regex regex = new Regex(@"### (?<vendor>\w+)\n\n(?<models>(?:^\+.*$\n?)+)", RegexOptions.Multiline);
             MatchCollection matches = regex.Matches(widgetMessage);
             Regex regex2 = new Regex(@"^\+ \[(?<model>\S+)\]\((?<url>\S+)\)(?: - (?<fw>.+))?$", RegexOptions.Multiline);
@@ -64,12 +66,10 @@ namespace YouTrackHubExchanger.ConnectorClass
                 products.Add("Models", modelList);
                 exchangeList.Add(products);
             }
-            //Console.WriteLine(exchangeList);
-            MarkdownSerializer(exchangeList); //убрать после отладки
-
+            Console.WriteLine("Markdown deserialized: done");
         }
 
-        public void MarkdownSerializer(JArray exchangeList)
+        public void MarkdownSerializer()
         {
             StringBuilder markdownContent = new StringBuilder();
             foreach (JObject disassemb0 in exchangeList)
@@ -85,7 +85,7 @@ namespace YouTrackHubExchanger.ConnectorClass
                 if (!(disassemb0 == exchangeList.Last)) markdownContent.AppendLine();
                 
             }
-            Console.Write(markdownContent);
+            Console.WriteLine("Markdown serialized: done");
         }
 
         public void YoutrackConnectPost()
