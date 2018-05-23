@@ -12,6 +12,7 @@ namespace YouTrackHubExchanger
             connector.YouTrackConnect();
             connector.MarkdownDeserializer();
             connector.MarkdownSerializer();
+            connector.YoutrackConnectPost();
             Console.WriteLine("All operations done");
             Console.ReadKey();
         }

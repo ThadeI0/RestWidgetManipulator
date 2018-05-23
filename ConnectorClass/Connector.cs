@@ -16,6 +16,8 @@ namespace YouTrackHubExchanger.ConnectorClass
         private JToken widgetID;
         private dynamic exchangeList = new JArray();
         private string jsonInput;
+        private JObject jInput; 
+        private RestClient client;
 
         public void YouTrackRestParams()
         {
@@ -25,9 +27,9 @@ namespace YouTrackHubExchanger.ConnectorClass
 
         public void YouTrackConnect()
         {
-            JObject jInput = JObject.Parse(jsonInput);
+            jInput = JObject.Parse(jsonInput);
             
-            var client = new RestClient((string)jInput["YTurl"] + "/" + (string)jInput["YTdashboard"]);
+            client = new RestClient((string)jInput["YTurl"] + "/" + (string)jInput["YTdashboard"]);
             client.Authenticator = new JwtAuthenticator((string)jInput["YTtoken"]);
             var request = new RestRequest(Method.GET);
             request.AddHeader("Accept", "application/json");
@@ -85,12 +87,20 @@ namespace YouTrackHubExchanger.ConnectorClass
                 if (!(disassemb0 == exchangeList.Last)) markdownContent.AppendLine();
                 
             }
+            //markdownContent.AppendLine("Здесь был Жура"); - проверка работоспособности post запроса
+            widgetID = markdownContent.ToString();
             Console.WriteLine("Markdown serialized: done");
         }
 
         public void YoutrackConnectPost()
         {
-
+            bufferBody.SelectToken(string.Format(@"$.data.widgets[?(@.config.id=='{0}')].config.message", (string)jInput["YTwidget"])).Replace(widgetID);
+            var request = new RestRequest(Method.POST);
+            request.AddHeader("Accept", "application/json");           
+            request.AddParameter("application/json", bufferBody.ToString(), ParameterType.RequestBody);
+            var response = client.Execute(request);
+            var content = response.Content;
+            Console.WriteLine("YOUTRACK POST: Done");
         }
     }
 }
