@@ -1,11 +1,9 @@
 ﻿using System;
 using System.IO;
-using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
 using RestSharp;
 using RestSharp.Authenticators;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace YouTrackHubExchanger.ConnectorClass
