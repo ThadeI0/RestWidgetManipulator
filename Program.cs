@@ -14,7 +14,7 @@ namespace YouTrackHubExchanger
             connector.MarkdownSerializer();
             connector.YoutrackConnectPost();
             Console.WriteLine("All operations done");
-            Console.ReadKey(); // убрать в релизе
+            Console.ReadKey(); //убрать в релизе
         }
     }
 }

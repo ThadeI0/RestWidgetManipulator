@@ -85,7 +85,7 @@ namespace YouTrackHubExchanger.ConnectorClass
                 if (!(disassemb0 == exchangeList.Last)) markdownContent.AppendLine();
                 
             }
-            //markdownContent.AppendLine("Здесь был Жура"); - проверка работоспособности post запроса
+            //markdownContent.AppendLine("Здесь был Жура"); - проверка работоспособности post запроса убрать в релизе
             widgetID = markdownContent.ToString();
             Console.WriteLine("Markdown serialized: done");
         }
